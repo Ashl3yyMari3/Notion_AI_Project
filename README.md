@@ -61,7 +61,7 @@
 ---
 
 ## 💡 Reflection
-> “Testing Notion AI taught me how to evaluate not just functionality, but *behavior* — how AI interprets human input, where it fails gracefully (or doesn’t), and how UX clarity affects user trust. It strengthened my skills in risk-based testing and cross-functional collaboration.”
+Testing Notion AI taught me how to evaluate not just functionality, but *behavior* — how AI interprets human input, where it fails gracefully (or doesn’t), and how UX clarity affects user trust. It strengthened my skills in risk-based testing and cross-functional collaboration.
 
 ---
 
