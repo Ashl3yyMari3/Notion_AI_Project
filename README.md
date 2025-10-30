@@ -36,8 +36,8 @@
 ---
 
 ## ✅ Key Artifacts
-- **Test Cases:** [📄 Test_Cases.csv](./artifacts/Test_Cases.csv)  
-- **Bug Report:** [🐞 Bug_Report.csv](./artifacts/Bug_Report.csv)  
+- **Test Cases:** [[📄 Test_Cases.csv](./artifacts/Test_Cases.csv) ](https://tinyurl.com/TestCaseBugReport) 
+- **Bug Report:** [[🐞 Bug_Report.csv](./artifacts/Bug_Report.csv)](https://tinyurl.com/TestCaseBugReport)  
 - **Automation Example:** [⚙️ Playwright Spec](./automation/playwright/example.spec.ts)  
 - **Screenshots:** [🖼️ Evidence Folder](./assets/screenshots/)  
 
