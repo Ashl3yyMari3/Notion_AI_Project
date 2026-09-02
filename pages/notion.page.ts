@@ -1,0 +1,127 @@
+import { expect, Locator, Page } from '@playwright/test';
+
+export class NotionPage {
+  readonly page: Page;
+  readonly aiPrompt: Locator;
+
+  constructor(page: Page) {
+    this.page = page;
+    this.aiPrompt = page
+      .locator([
+        'textarea[placeholder*="Ask" i]',
+        '[contenteditable="true"][data-placeholder*="Ask" i]',
+        '[role="dialog"] textarea',
+        '[role="dialog"] [contenteditable="true"]',
+      ].join(', '))
+      .last();
+  }
+
+  async openWorkspace(): Promise<void> {
+    await this.page.goto('/');
+    await expect(this.page.locator('body')).toBeVisible();
+
+    if (/\/(login|signup|get-started)/i.test(this.page.url())) {
+      throw new Error(
+        'Notion authentication is missing or expired. Run `npm run auth`, sign in, and close the recorder window before running the tests.',
+      );
+    }
+  }
+
+  async createBlankPage(title: string): Promise<void> {
+    const newPageButton = this.page
+      .getByRole('button', { name: /new page/i })
+      .or(this.page.locator('[aria-label*="new page" i]'))
+      .or(this.page.getByText(/^new page$/i))
+      .first();
+
+    await expect(newPageButton).toBeVisible();
+    await newPageButton.click();
+
+    const titleInput = this.page
+      .locator([
+        '[contenteditable="true"][data-placeholder="Untitled"]',
+        '[contenteditable="true"][aria-label*="title" i]',
+        'textarea[placeholder="Untitled"]',
+        'textarea[placeholder*="title" i]',
+      ].join(', '))
+      .first();
+
+    await expect(titleInput).toBeVisible();
+    await titleInput.fill(title);
+
+    await expect.poll(async () => {
+      return (await titleInput.inputValue().catch(async () => titleInput.textContent())) ?? '';
+    }).toContain(title);
+  }
+
+  async openAIComposer(): Promise<void> {
+    const pageBody = this.page
+      .locator('.notion-page-content [contenteditable="true"], [data-content-editable-leaf="true"]')
+      .last();
+
+    await expect(pageBody).toBeVisible();
+    await pageBody.click();
+
+    // Notion documents this as the shortcut for starting AI on a new line.
+    await pageBody.press('Space');
+    await expect(this.aiPrompt).toBeVisible();
+  }
+
+  async generateAIContent(
+    prompt: string,
+    timeoutMs = 45_000,
+  ): Promise<{ durationMs: number; responseText: string }> {
+    const beforeText = await this.getDocumentText();
+
+    await this.aiPrompt.fill(prompt);
+    const startedAt = Date.now();
+    await this.aiPrompt.press('Enter');
+
+    const keepResponseButton = this.page
+      .getByRole('button', { name: /insert below|keep|done/i })
+      .last();
+
+    await expect(keepResponseButton).toBeVisible({ timeout: timeoutMs });
+    const durationMs = Date.now() - startedAt;
+    await keepResponseButton.click();
+
+    await expect.poll(
+      async () => (await this.getDocumentText()).length,
+      { timeout: timeoutMs },
+    ).toBeGreaterThan(beforeText.length + 20);
+
+    const afterText = await this.getDocumentText();
+    return {
+      durationMs,
+      responseText: afterText.slice(beforeText.length).trim(),
+    };
+  }
+
+  async moveCurrentPageToTrash(): Promise<void> {
+    await this.page.keyboard.press('Escape').catch(() => undefined);
+
+    const moreButton = this.page.getByRole('button', { name: /^more/i }).last();
+    if (!(await moreButton.isVisible().catch(() => false))) return;
+
+    await moreButton.click();
+    const trashAction = this.page
+      .getByRole('menuitem', { name: /move to trash|delete/i })
+      .or(this.page.getByText(/move to trash/i))
+      .last();
+
+    if (await trashAction.isVisible().catch(() => false)) {
+      await trashAction.click();
+    }
+  }
+
+  private async getDocumentText(): Promise<string> {
+    const scopedBlocks = this.page.locator(
+      '.notion-page-content [data-content-editable-leaf="true"]',
+    );
+    const blocks = (await scopedBlocks.count()) > 0
+      ? scopedBlocks
+      : this.page.locator('[data-content-editable-leaf="true"]');
+
+    return (await blocks.allInnerTexts()).join(' ').replace(/\s+/g, ' ').trim();
+  }
+}

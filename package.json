@@ -1,0 +1,19 @@
+{
+  "name": "notion-ai-quality-automation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Playwright automation for authenticated Notion and Notion AI quality checks.",
+  "scripts": {
+    "preauth": "node -e \"require('fs').mkdirSync('playwright/.auth',{recursive:true})\"",
+    "auth": "playwright codegen --save-storage=playwright/.auth/notion.json https://www.notion.so/login",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ai": "RUN_NOTION_AI=true playwright test --grep @ai-generation",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^24.3.0",
+    "typescript": "^5.9.2"
+  }
+}
