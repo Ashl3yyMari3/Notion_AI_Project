@@ -65,12 +65,9 @@ export class NotionPage {
     await newPageButton.click();
 
     const titleInput = this.page
-      .locator([
-        '[contenteditable="true"][data-placeholder="Untitled"]',
-        '[contenteditable="true"][aria-label*="title" i]',
-        'textarea[placeholder="Untitled"]',
-        'textarea[placeholder*="title" i]',
-      ].join(', '))
+      .getByPlaceholder('New page', { exact: true })
+      .or(this.page.getByPlaceholder('Untitled', { exact: true }))
+      .or(this.page.locator('[contenteditable="true"][aria-label*="title" i]'))
       .first();
 
     await expect(titleInput).toBeVisible();
