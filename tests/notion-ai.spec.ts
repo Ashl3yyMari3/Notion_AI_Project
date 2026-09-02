@@ -34,27 +34,29 @@ test.describe('Notion AI authenticated workflow', () => {
     await expect(notion.aiPrompt).toBeEditable();
   });
 
-  test('generates a relevant AI response @ai-generation', async ({}, testInfo) => {
+  test.describe('AI generation', () => {
     test.skip(
       process.env.RUN_NOTION_AI !== 'true',
       'Opt in with RUN_NOTION_AI=true to avoid consuming Notion AI usage accidentally.',
     );
 
-    await notion.createBlankPage(`QA AI Generation Test ${Date.now()}`);
-    testPageCreated = true;
-    await notion.openAIComposer();
+    test('generates a relevant AI response @ai-generation', async ({}, testInfo) => {
+      await notion.createBlankPage(`QA AI Generation Test ${Date.now()}`);
+      testPageCreated = true;
+      await notion.openAIComposer();
 
-    const result = await notion.generateAIContent(
-      'In one sentence, explain why risk-based testing is useful in software quality assurance.',
-    );
+      const result = await notion.generateAIContent(
+        'In one sentence, explain why risk-based testing is useful in software quality assurance.',
+      );
 
-    expect(result.responseText.length).toBeGreaterThan(20);
-    expect(result.responseText).toMatch(/risk|test|quality|software/i);
-    expect(result.durationMs).toBeLessThan(45_000);
+      expect(result.responseText.length).toBeGreaterThan(20);
+      expect(result.responseText).toMatch(/risk|test|quality|software/i);
+      expect(result.durationMs).toBeLessThan(45_000);
 
-    await testInfo.attach('notion-ai-metrics.json', {
-      body: JSON.stringify(result, null, 2),
-      contentType: 'application/json',
+      await testInfo.attach('notion-ai-metrics.json', {
+        body: JSON.stringify(result, null, 2),
+        contentType: 'application/json',
+      });
     });
   });
 });

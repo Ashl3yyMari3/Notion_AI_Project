@@ -4,10 +4,14 @@
   "private": true,
   "description": "Playwright automation for authenticated Notion and Notion AI quality checks.",
   "scripts": {
-    "preauth": "node -e \"require('fs').mkdirSync('playwright/.auth',{recursive:true})\"",
+    "install:browsers": "playwright install chromium",
+    "preauth": "npm run install:browsers && node -e \"require('fs').mkdirSync('playwright/.auth',{recursive:true})\"",
     "auth": "playwright codegen --save-storage=playwright/.auth/notion.json https://www.notion.so/login",
+    "pretest": "npm run install:browsers",
     "test": "playwright test",
+    "pretest:headed": "npm run install:browsers",
     "test:headed": "playwright test --headed",
+    "pretest:ai": "npm run install:browsers",
     "test:ai": "RUN_NOTION_AI=true playwright test --grep @ai-generation",
     "report": "playwright show-report"
   },

@@ -60,6 +60,11 @@ Notion_AI_Project/
 git clone https://github.com/Ashl3yyMari3/Notion_AI_Project.git
 cd Notion_AI_Project
 npm install
+```
+
+The test scripts automatically check for the required Chromium browser. If a browser-installation error still appears, run:
+
+```bash
 npx playwright install chromium
 ```
 
