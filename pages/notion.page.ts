@@ -17,22 +17,49 @@ export class NotionPage {
   }
 
   async openWorkspace(): Promise<void> {
-    await this.page.goto('/');
+    // The root URL now serves Notion's marketing site, even for signed-in users.
+    // The login route redirects an authenticated session into the web workspace.
+    await this.page.goto('/login', { waitUntil: 'domcontentloaded' });
     await expect(this.page.locator('body')).toBeVisible();
 
-    if (/\/(login|signup|get-started)/i.test(this.page.url())) {
+    const newPageButton = this.getNewPageButton();
+    const alwaysOpenNotion = this.page
+      .getByRole('link', { name: /always open notion/i })
+      .first();
+    const openNotion = this.page
+      .getByRole('button', { name: /^open notion$/i })
+      .first();
+
+    await expect(
+      newPageButton.or(alwaysOpenNotion).or(openNotion).first(),
+    ).toBeVisible({ timeout: 30_000 });
+
+    if (await alwaysOpenNotion.isVisible().catch(() => false)) {
+      await alwaysOpenNotion.click();
+    } else if (await openNotion.isVisible().catch(() => false)) {
+      await openNotion.click();
+    }
+
+    const loginPrompt = this.page
+      .getByRole('heading', { name: /log in|sign in/i })
+      .or(this.page.getByRole('button', { name: /continue with email/i }))
+      .first();
+
+    await expect(newPageButton.or(loginPrompt).first()).toBeVisible({
+      timeout: 30_000,
+    });
+
+    if (await loginPrompt.isVisible().catch(() => false)) {
       throw new Error(
         'Notion authentication is missing or expired. Run `npm run auth`, sign in, and close the recorder window before running the tests.',
       );
     }
+
+    await expect(newPageButton).toBeVisible({ timeout: 30_000 });
   }
 
   async createBlankPage(title: string): Promise<void> {
-    const newPageButton = this.page
-      .getByRole('button', { name: /new page/i })
-      .or(this.page.locator('[aria-label*="new page" i]'))
-      .or(this.page.getByText(/^new page$/i))
-      .first();
+    const newPageButton = this.getNewPageButton();
 
     await expect(newPageButton).toBeVisible();
     await newPageButton.click();
@@ -123,5 +150,13 @@ export class NotionPage {
       : this.page.locator('[data-content-editable-leaf="true"]');
 
     return (await blocks.allInnerTexts()).join(' ').replace(/\s+/g, ' ').trim();
+  }
+
+  private getNewPageButton(): Locator {
+    return this.page
+      .getByRole('button', { name: /new page/i })
+      .or(this.page.locator('[aria-label*="new page" i]'))
+      .or(this.page.getByText(/^new page$/i))
+      .first();
   }
 }
