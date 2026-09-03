@@ -7,13 +7,8 @@ export class NotionPage {
   constructor(page: Page) {
     this.page = page;
     this.aiPrompt = page
-      .locator([
-        'textarea[placeholder*="Ask" i]',
-        '[contenteditable="true"][data-placeholder*="Ask" i]',
-        '[role="dialog"] textarea',
-        '[role="dialog"] [contenteditable="true"]',
-      ].join(', '))
-      .last();
+      .getByPlaceholder(/do anything with ai/i)
+      .first();
   }
 
   async openWorkspace(): Promise<void> {
