@@ -88,16 +88,12 @@ export class NotionPage {
   }
 
   async openAIComposer(): Promise<void> {
-    const pageBody = this.page
-      .getByRole('main')
-      .getByPlaceholder(' ', { exact: true })
+    const aiButton = this.page
+      .getByRole('button', { name: /^ai$/i })
       .first();
 
-    await expect(pageBody).toBeVisible();
-    await pageBody.click();
-
-    // Notion documents this as the shortcut for starting AI on a new line.
-    await pageBody.press('Space');
+    await expect(aiButton).toBeVisible();
+    await aiButton.click();
     await expect(this.aiPrompt).toBeVisible();
   }
 
