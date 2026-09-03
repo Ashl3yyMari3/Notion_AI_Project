@@ -22,7 +22,7 @@ export class NotionPage {
     await this.page.goto('/login', { waitUntil: 'domcontentloaded' });
     await expect(this.page.locator('body')).toBeVisible();
 
-    const newPageButton = this.getNewPageButton();
+    const privateSection = this.getPrivateSectionButton();
     const alwaysOpenNotion = this.page
       .getByRole('link', { name: /always open notion/i })
       .first();
@@ -31,7 +31,7 @@ export class NotionPage {
       .first();
 
     await expect(
-      newPageButton.or(alwaysOpenNotion).or(openNotion).first(),
+      privateSection.or(alwaysOpenNotion).or(openNotion).first(),
     ).toBeVisible({ timeout: 30_000 });
 
     if (await alwaysOpenNotion.isVisible().catch(() => false)) {
@@ -45,7 +45,7 @@ export class NotionPage {
       .or(this.page.getByRole('button', { name: /continue with email/i }))
       .first();
 
-    await expect(newPageButton.or(loginPrompt).first()).toBeVisible({
+    await expect(privateSection.or(loginPrompt).first()).toBeVisible({
       timeout: 30_000,
     });
 
@@ -55,11 +55,17 @@ export class NotionPage {
       );
     }
 
-    await expect(newPageButton).toBeVisible({ timeout: 30_000 });
+    await expect(privateSection).toBeVisible({ timeout: 30_000 });
   }
 
   async createBlankPage(title: string): Promise<void> {
-    const newPageButton = this.getNewPageButton();
+    const privateSection = this.getPrivateSectionButton();
+    await privateSection.hover();
+
+    const newPageButton = this.page
+      .getByRole('button', { name: 'Add a page', exact: true })
+      .filter({ visible: true })
+      .first();
 
     await expect(newPageButton).toBeVisible();
     await newPageButton.click();
@@ -156,9 +162,10 @@ export class NotionPage {
     return (await blocks.allInnerTexts()).join(' ').replace(/\s+/g, ' ').trim();
   }
 
-  private getNewPageButton(): Locator {
+  private getPrivateSectionButton(): Locator {
     return this.page
-      .getByRole('button', { name: 'Add a page', exact: true })
+      .getByRole('navigation', { name: /sidebar/i })
+      .getByRole('button', { name: 'Private', exact: true })
       .first();
   }
 }
