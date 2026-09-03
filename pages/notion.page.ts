@@ -131,7 +131,10 @@ export class NotionPage {
       .last();
     if (!(await actionsButton.isVisible().catch(() => false))) return;
 
-    await actionsButton.click();
+    // Notion's animated top bar can briefly overlap this control and intercept
+    // pointer clicks. Keyboard activation uses the button's accessible behavior.
+    await actionsButton.focus();
+    await actionsButton.press('Enter');
     const trashAction = this.page
       .getByRole('menuitem', { name: /move to trash|delete/i })
       .or(this.page.getByText(/move to trash/i))
