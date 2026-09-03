@@ -76,12 +76,16 @@ export class NotionPage {
     await expect.poll(async () => {
       return (await titleInput.inputValue().catch(async () => titleInput.textContent())) ?? '';
     }).toContain(title);
+
+    // A new page can open with Notion's "Get started with" overlay expanded.
+    await this.page.keyboard.press('Escape');
   }
 
   async openAIComposer(): Promise<void> {
     const pageBody = this.page
-      .locator('.notion-page-content [contenteditable="true"], [data-content-editable-leaf="true"]')
-      .last();
+      .getByRole('main')
+      .getByPlaceholder(' ', { exact: true })
+      .first();
 
     await expect(pageBody).toBeVisible();
     await pageBody.click();
@@ -124,10 +128,13 @@ export class NotionPage {
   async moveCurrentPageToTrash(): Promise<void> {
     await this.page.keyboard.press('Escape').catch(() => undefined);
 
-    const moreButton = this.page.getByRole('button', { name: /^more/i }).last();
-    if (!(await moreButton.isVisible().catch(() => false))) return;
+    const actionsButton = this.page
+      .getByRole('banner')
+      .getByRole('button', { name: /actions|more/i })
+      .last();
+    if (!(await actionsButton.isVisible().catch(() => false))) return;
 
-    await moreButton.click();
+    await actionsButton.click();
     const trashAction = this.page
       .getByRole('menuitem', { name: /move to trash|delete/i })
       .or(this.page.getByText(/move to trash/i))
@@ -151,9 +158,8 @@ export class NotionPage {
 
   private getNewPageButton(): Locator {
     return this.page
-      .getByRole('button', { name: /new page/i })
-      .or(this.page.locator('[aria-label*="new page" i]'))
-      .or(this.page.getByText(/^new page$/i))
+      .getByRole('navigation', { name: /sidebar/i })
+      .getByRole('button', { name: /^new page/i })
       .first();
   }
 }
