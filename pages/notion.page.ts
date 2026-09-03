@@ -102,13 +102,13 @@ export class NotionPage {
     const startedAt = Date.now();
     await this.aiPrompt.press('Enter');
 
-    const keepResponseButton = this.page
-      .getByRole('button', { name: /insert below|keep|done/i })
+    const insertResponseButton = this.page
+      .getByRole('button', { name: /insert into this page/i })
       .last();
 
-    await expect(keepResponseButton).toBeVisible({ timeout: timeoutMs });
+    await expect(insertResponseButton).toBeVisible({ timeout: timeoutMs });
     const durationMs = Date.now() - startedAt;
-    await keepResponseButton.click();
+    await insertResponseButton.click();
 
     await expect.poll(
       async () => (await this.getDocumentText()).length,
