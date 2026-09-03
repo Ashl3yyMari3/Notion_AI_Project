@@ -158,8 +158,7 @@ export class NotionPage {
 
   private getNewPageButton(): Locator {
     return this.page
-      .getByRole('navigation', { name: /sidebar/i })
-      .getByRole('button', { name: /^new page/i })
+      .getByRole('button', { name: 'Add a page', exact: true })
       .first();
   }
 }
